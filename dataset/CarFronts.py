@@ -39,6 +39,9 @@ class FrontDataset(Dataset):
     def load_image(self, path):
         return Image.open(path)
 
+    def print_info(self):
+        print(f"Dataset contains {len(self.data)} cars")
+
 
 if __name__ == '__main__':
     # Give absolute path to folders
