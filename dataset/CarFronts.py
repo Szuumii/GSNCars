@@ -1,8 +1,6 @@
 import os
 from PIL import Image
-import numpy as np
 import pandas as pd
-import torch
 from torch.utils.data import Dataset
 import torchvision.transforms as transforms
 
@@ -27,7 +25,7 @@ class FrontDataset(Dataset):
 
     def __getitem__(self, idx):
         car_path, prod_year = self.data[idx][0], self.data[idx][1]
-        car_full_path = os.path.join(dataset_path + car_path)
+        car_full_path = os.path.join(self.dataset_path + car_path)
         car_image = self.load_image(car_full_path)
         car_image = car_image.convert("RGB")
 
