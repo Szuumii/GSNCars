@@ -1,6 +1,7 @@
 import os
 from PIL import Image
 import pandas as pd
+import numpy as np
 from torch.utils.data import Dataset
 import torchvision.transforms as transforms
 
@@ -39,6 +40,15 @@ class FrontDataset(Dataset):
 
     def print_info(self):
         print(f"Dataset contains {len(self.data)} cars")
+
+    def minimum_prod_year(self):
+        return np.amin(self.data, 0)[1]
+
+    def maximum_prod_year(self):
+        return np.amax(self.data, 0)[1]
+
+    def shrink_randomly(self, size):
+        self.data = self.data[np.random.choice(self.data.shape[0], size, replace=False), :]
 
 
 if __name__ == '__main__':

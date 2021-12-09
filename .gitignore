@@ -1,4 +1,2 @@
 venv/
-Data/
-*.env
-settings.json
+data/
