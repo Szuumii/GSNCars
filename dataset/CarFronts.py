@@ -50,6 +50,16 @@ class FrontDataset(Dataset):
     def shrink_randomly(self, size):
         self.data = self.data[np.random.choice(self.data.shape[0], size, replace=False), :]
 
+    @staticmethod
+    def prod_years_range(csv_path):
+        assert os.path.exists(
+            csv_path),  f"Cannot access data file {csv_path}"
+        df = pd.read_csv(csv_path)
+        MAXIMUM_YEAR = df.max()['prod_year']
+        MINIMUM_YEAR = df.min()['prod_year']
+
+        return MAXIMUM_YEAR - MINIMUM_YEAR + 1
+
 
 if __name__ == '__main__':
     # Give absolute path to folders

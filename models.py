@@ -8,13 +8,14 @@ from torch import nn
 class DVMModel(pl.LightningModule):
     def __init__(self, dataset_csv_path, dataset_dir_path, batch_size=32, learning_rate=0.0002, input_size=(300, 300), small_train=False):
         super().__init__()
+        self.dataset_csv_path = dataset_csv_path
+        self.dataset_dir_path = dataset_dir_path
         self.batch_size = batch_size
         self.learning_rate = learning_rate
         self.small_train = small_train
         self.input_size = input_size
 
-        self.dataset = FrontDataset(dataset_csv_path, dataset_dir_path)
-        PROD_YEAR_RANGE = self.dataset.maximum_prod_year() - self.dataset.minimum_prod_year() + 1
+        PROD_YEAR_RANGE = FrontDataset.prod_years_range(csv_path)
 
         self.net = models.vgg16(pretrained=True)
         last_in_features = self.net.classifier[6].in_features
@@ -28,7 +29,7 @@ class DVMModel(pl.LightningModule):
     def prepare_data(self):
         transform = transforms.Compose([
             transforms.ToTensor(), transforms.Resize(self.input_size)])
-        self.dataset.transform = transform
+        self.dataset = FrontDataset(self.dataset_csv_path, self.dataset_dir_path, transform)
 
         if self.small_train:
             TARGET_SIZE = int(len(self.dataset) * 0.05) # TODO Arbitrary 5%, how would we like to specify this?
