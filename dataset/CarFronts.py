@@ -7,12 +7,12 @@ import torchvision.transforms as transforms
 
 
 class FrontDataset(Dataset):
-    def __init__(self, csv_path, dataset_path, transform=None):
+    def __init__(self, csv_path, dataset_path, transform=None, data=None):
         self.csv_path = csv_path
         self.dataset_path = dataset_path
         self.transform = transform
 
-        self.data = self.load_data()
+        self.data = self.load_data() if data is None else data
 
     def load_data(self):
         print(f"Loading file {self.csv_path}")
