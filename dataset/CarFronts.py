@@ -7,12 +7,12 @@ import torchvision.transforms as transforms
 
 
 class FrontDataset(Dataset):
-    def __init__(self, csv_path, dataset_path, transform=None, data=None):
+    def __init__(self, csv_path, dataset_path, transform=None):
         self.csv_path = csv_path
         self.dataset_path = dataset_path
         self.transform = transform
 
-        self.data = self.load_data() if data is None else data
+        self.data = self.load_data()
 
     def load_data(self):
         print(f"Loading file {self.csv_path}")
@@ -47,7 +47,8 @@ class FrontDataset(Dataset):
     def maximum_prod_year(self):
         return np.amax(self.data, 0)[1]
 
-    def shrink_randomly(self, size):
+    def shrink_randomly(self, ratio):
+        size = int(len(self.data) * ratio)
         self.data = self.data[np.random.choice(self.data.shape[0], size, replace=False), :]
 
     @staticmethod
