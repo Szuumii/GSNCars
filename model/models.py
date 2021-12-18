@@ -28,23 +28,24 @@ class DVMModel(pl.LightningModule):
 
     def prepare_data(self):
         SMALL_DATA_PERCENTAGE = 0.2
+        IMG_SIZE = (300, 300)
 
-        train_csv_path = ""
-        val_csv_path = ""
-        test_csv_path = ""
+        train_csv_path = "../csv_files/angle_0/processed_angle_train_0.csv"
+        val_csv_path = "../csv_files/angle_0/processed_angle_val_0.csv"
+        test_csv_path = "../csv_files/angle_0/processed_angle_test_0.csv"
 
         train_transform = transforms.Compose([
-            transforms.ToTensor(), transforms.Resize(300, 300)])
+            transforms.ToTensor(), transforms.Resize(IMG_SIZE)])
 
         self.train_dataset = FrontDataset(train_csv_path, self.dataset_dir_path, train_transform)
 
         val_transform = transforms.Compose([
-            transforms.ToTensor(), transforms.Resize(300, 300)])
+            transforms.ToTensor(), transforms.Resize(IMG_SIZE)])
 
         self.validation_dataset = FrontDataset(val_csv_path, self.dataset_dir_path, val_transform)
 
         test_transform = transforms.Compose([
-            transforms.ToTensor(), transforms.Resize(300, 300)])
+            transforms.ToTensor(), transforms.Resize(IMG_SIZE)])
 
         self.test_dataset = FrontDataset(test_csv_path, self.dataset_dir_path, test_transform)
         
