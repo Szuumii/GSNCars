@@ -64,9 +64,11 @@ class FrontDataset(Dataset):
 
 if __name__ == '__main__':
     # Give absolute path to folders
-    csv_path = '../processed_fronts.csv'
-    dataset_path = "../data/"
+    csv_path = '/home/shades/GitRepos/GSNCars/csv_files/angle_0/relevant_angle_test_0.csv'
+    dataset_root = "/home/shades/Datasets/resized_DVM/"
 
     transform = transforms.ToTensor()
-    dataset = FrontDataset(csv_path, dataset_path, transform)
+    dataset = FrontDataset(csv_path, dataset_root, transform)
     tensor, prod_year = dataset[6]
+
+    print(prod_year)
