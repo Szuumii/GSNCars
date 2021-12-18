@@ -1,10 +1,10 @@
 from torchvision import models, transforms
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
-import numpy as np
 import torch
 from dataset.CarFronts import FrontDataset
 from torch import nn
+
 
 class DVMModel(pl.LightningModule):
     def __init__(self, dataset_dir_path, batch_size=32, learning_rate=1e-6, small_train=False):
@@ -30,9 +30,9 @@ class DVMModel(pl.LightningModule):
         SMALL_DATA_PERCENTAGE = 0.2
         IMG_SIZE = (300, 300)
 
-        train_csv_path = "../csv_files/angle_0/processed_angle_train_0.csv"
-        val_csv_path = "../csv_files/angle_0/processed_angle_val_0.csv"
-        test_csv_path = "../csv_files/angle_0/processed_angle_test_0.csv"
+        train_csv_path = "../csv_files/angle_0/relevant_angle_train_0.csv"
+        val_csv_path = "../csv_files/angle_0/relevant_angle_val_0.csv"
+        test_csv_path = "../csv_files/angle_0/relevant_angle_test_0.csv"
 
         train_transform = transforms.Compose([
             transforms.ToTensor(), transforms.Resize(IMG_SIZE)])
@@ -48,7 +48,7 @@ class DVMModel(pl.LightningModule):
             transforms.ToTensor(), transforms.Resize(IMG_SIZE)])
 
         self.test_dataset = FrontDataset(test_csv_path, self.dataset_dir_path, test_transform)
-        
+
         if self.small_train:
             self.train_dataset.shrink_randomly(SMALL_DATA_PERCENTAGE)
             self.validation_dataset.shrink_randomly(SMALL_DATA_PERCENTAGE)
@@ -60,7 +60,7 @@ class DVMModel(pl.LightningModule):
         loss = self.loss(predictions, (prod_year - self.train_dataset.minimum_prod_year()))
         self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         return loss
-    
+
     def validation_step(self, batch, batch_idx):
         x, prod_year = batch
         predictions = self.forward(x)
@@ -78,6 +78,7 @@ class DVMModel(pl.LightningModule):
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+
 
 if __name__ == '__main__':
     dataset_path = "data/"
