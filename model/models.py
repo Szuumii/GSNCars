@@ -15,24 +15,27 @@ class DVMModel(pl.LightningModule):
         self.small_train = small_train
 
         # Prodyear range predetermined upfront based on the dataset
-        PROD_YEAR_RANGE = 21
+        self.PROD_YEAR_RANGE = 18
+
+        self.MAX_PROD_YEAR = 2018
 
         self.net = models.vgg16(pretrained=True)
         last_in_features = self.net.classifier[6].in_features
-        self.net.classifier[6] = nn.Linear(last_in_features, PROD_YEAR_RANGE)
+        self.net.classifier[6] = nn.Linear(last_in_features, self.PROD_YEAR_RANGE)
 
         self.loss = nn.CrossEntropyLoss()
+        # self.metric = pl.metrics.MeanAbsoluteError()
 
     def forward(self, x):
         return self.net(x)
 
     def prepare_data(self):
         SMALL_DATA_PERCENTAGE = 0.2
-        IMG_SIZE = (300, 300)
+        IMG_SIZE = (290, 290)
 
-        train_csv_path = "../csv_files/angle_0/relevant_angle_train_0.csv"
-        val_csv_path = "../csv_files/angle_0/relevant_angle_val_0.csv"
-        test_csv_path = "../csv_files/angle_0/relevant_angle_test_0.csv"
+        train_csv_path = "/home/shades/GitRepos/GSNCars/csv_files/angle_0/relevant_angle_train_0.csv"
+        val_csv_path = "/home/shades/GitRepos/GSNCars/csv_files/angle_0/relevant_angle_val_0.csv"
+        test_csv_path = "/home/shades/GitRepos/GSNCars/csv_files/angle_0/relevant_angle_test_0.csv"
 
         train_transform = transforms.Compose([
             transforms.ToTensor(), transforms.Resize(IMG_SIZE)])
@@ -57,15 +60,36 @@ class DVMModel(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         x, prod_year = batch
         predictions = self.forward(x)
-        loss = self.loss(predictions, (prod_year - self.train_dataset.minimum_prod_year()))
+        target = self.target_for_prod_year(prod_year)
+        loss = self.loss(predictions, target)
         self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
         x, prod_year = batch
         predictions = self.forward(x)
-        loss = self.loss(predictions, (prod_year - self.train_dataset.minimum_prod_year()))
+        target = self.target_for_prod_year(prod_year)
+        loss = self.loss(predictions, target)
         self.log("val_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+
+    # def test_step(self, batch, batch_idx):
+    #     loss, acc = self._shared_eval_step(batch, batch_idx)
+    #     metrics = {"test_acc": acc, "test_loss": loss}
+    #     self.log_dict(metrics)
+    #     return metrics
+
+    # def _shared_eval_step(self, batch, batch_idx):
+    #     x, prod_year = batch
+    #     predictions = self.model(x)
+    #     loss = self.loss(y_hat, y)
+    #     mea = self.metric(y_hat, prod_year)
+    #     return loss, acc
+
+    def target_for_prod_year(model, prod_year):
+        targets = torch.zeros((prod_year.shape[0], model.PROD_YEAR_RANGE), device="cuda")
+        for target, yr in zip(targets, prod_year):
+            target[model.MAX_PROD_YEAR - yr] = 1
+        return targets
 
     def train_dataloader(self):
         return DataLoader(self.train_dataset, batch_size=self.batch_size, num_workers=8)
@@ -78,11 +102,3 @@ class DVMModel(pl.LightningModule):
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.learning_rate)
-
-
-if __name__ == '__main__':
-    dataset_path = "data/"
-
-    trainer = pl.Trainer(max_epochs=1)
-    model = DVMModel(dataset_path, small_train=True)
-    trainer.fit(model)
