@@ -4,11 +4,14 @@ import pytorch_lightning as pl
 import torch
 from dataset.CarFronts import FrontDataset
 from torch import nn
+from torchmetrics import MeanAbsoluteError
 
 
 class DVMModel(pl.LightningModule):
     def __init__(self, dataset_dir_path, batch_size=32, learning_rate=1e-6, small_train=False):
         super().__init__()
+        
+        self.save_hyperparameters()
         self.dataset_dir_path = dataset_dir_path
         self.batch_size = batch_size
         self.learning_rate = learning_rate
@@ -24,18 +27,18 @@ class DVMModel(pl.LightningModule):
         self.net.classifier[6] = nn.Linear(last_in_features, self.PROD_YEAR_RANGE)
 
         self.loss = nn.CrossEntropyLoss()
-        # self.metric = pl.metrics.MeanAbsoluteError()
+        self.metric = MeanAbsoluteError()
 
     def forward(self, x):
         return self.net(x)
 
     def prepare_data(self):
-        SMALL_DATA_PERCENTAGE = 0.2
-        IMG_SIZE = (290, 290)
+        SMALL_DATA_PERCENTAGE = 0.4
+        IMG_SIZE = (300, 300)
 
-        train_csv_path = "/home/shades/GitRepos/GSNCars/csv_files/angle_0/relevant_angle_train_0.csv"
-        val_csv_path = "/home/shades/GitRepos/GSNCars/csv_files/angle_0/relevant_angle_val_0.csv"
-        test_csv_path = "/home/shades/GitRepos/GSNCars/csv_files/angle_0/relevant_angle_test_0.csv"
+        train_csv_path = "/home/shades/GitRepos/GSNCars/csv_files/confirmed_fronts/confirmed_front_train.csv"
+        val_csv_path = "/home/shades/GitRepos/GSNCars/csv_files/confirmed_fronts/confirmed_front_val.csv"
+        test_csv_path = "/home/shades/GitRepos/GSNCars/csv_files/confirmed_fronts/confirmed_front_test.csv"
 
         train_transform = transforms.Compose([
             transforms.ToTensor(), transforms.Resize(IMG_SIZE)])
@@ -66,29 +69,41 @@ class DVMModel(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
+        loss, mae = self._shared_eval_step(batch, batch_idx)
+        self.log("val_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log("val_mea", mae, on_step=False, on_epoch=True, logger=True)
+
+    def test_step(self, batch, batch_idx):
+        loss, mae = self._shared_eval_step(batch, batch_idx)
+        metrics = {"test_mae": mae, "test_loss": loss}
+        self.log_dict(metrics)
+        return metrics
+
+    def test_epoch_end(self, outputs) -> None:
+        suma = 0
+        for out in outputs:
+            suma += out['test_mae']
+
+        suma /= len(outputs)
+        self.log("test_epoch_mea", suma)
+
+    def _shared_eval_step(self, batch, batch_idx):
         x, prod_year = batch
         predictions = self.forward(x)
         target = self.target_for_prod_year(prod_year)
+        predicted_class = predictions.argmax(dim=1)
+        print(f"Predicted_class: {predicted_class}")
+        target_class = torch.tensor(self.MAX_PROD_YEAR - prod_year.clone(), device="cuda")
+        print(f"Target_class: {target_class}")
         loss = self.loss(predictions, target)
-        self.log("val_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        mea = self.metric(predicted_class, target_class)
+        self.metric.reset()
+        return loss, mea
 
-    # def test_step(self, batch, batch_idx):
-    #     loss, acc = self._shared_eval_step(batch, batch_idx)
-    #     metrics = {"test_acc": acc, "test_loss": loss}
-    #     self.log_dict(metrics)
-    #     return metrics
-
-    # def _shared_eval_step(self, batch, batch_idx):
-    #     x, prod_year = batch
-    #     predictions = self.model(x)
-    #     loss = self.loss(y_hat, y)
-    #     mea = self.metric(y_hat, prod_year)
-    #     return loss, acc
-
-    def target_for_prod_year(model, prod_year):
-        targets = torch.zeros((prod_year.shape[0], model.PROD_YEAR_RANGE), device="cuda")
+    def target_for_prod_year(self, prod_year):
+        targets = torch.zeros((prod_year.shape[0], self.PROD_YEAR_RANGE), device="cuda")
         for target, yr in zip(targets, prod_year):
-            target[model.MAX_PROD_YEAR - yr] = 1
+            target[self.MAX_PROD_YEAR - yr] = 1
         return targets
 
     def train_dataloader(self):
