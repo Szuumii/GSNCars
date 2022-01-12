@@ -4,8 +4,8 @@ from model.models import DVMModel
 import torch
 
 if __name__ == '__main__':
-    dataset_root = "/home/shades/Datasets/resized_DVM/"
-    ckp_path = "/home/shades/GitRepos/GSNCars/lightning_logs/logs/version_27/checkpoints/epoch=7-step=24735.ckpt"
+    dataset_root = "/home/shades/Datasets/"
+    ckp_path = "/home/shades/GitRepos/GSNCars/lightning_logs/logs/version_34/checkpoints/epoch=3-step=47979.ckpt"
     batch_size = 16
 
     torch.cuda.empty_cache()

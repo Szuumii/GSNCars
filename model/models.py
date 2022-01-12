@@ -22,9 +22,14 @@ class DVMModel(pl.LightningModule):
 
         self.MAX_PROD_YEAR = 2018
 
-        self.net = models.vgg16(pretrained=True)
-        last_in_features = self.net.classifier[6].in_features
-        self.net.classifier[6] = nn.Linear(last_in_features, self.PROD_YEAR_RANGE)
+        # VGG 16
+        # self.net = models.vgg16(pretrained=True)
+        # last_in_features = self.net.classifier[6].in_features
+        # self.net.classifier[6] = nn.Linear(last_in_features, self.PROD_YEAR_RANGE)
+
+        #Resnet 50
+        self.net = models.resnet50(pretrained=True)
+        self.net.fc = nn.Linear(self.net.fc.in_features, self.PROD_YEAR_RANGE)
 
         self.loss = nn.CrossEntropyLoss()
         self.metric = MeanAbsoluteError()
@@ -36,9 +41,9 @@ class DVMModel(pl.LightningModule):
         SMALL_DATA_PERCENTAGE = 0.4
         IMG_SIZE = (300, 300)
 
-        train_csv_path = "/home/shades/GitRepos/GSNCars/csv_files/confirmed_fronts/confirmed_front_train.csv"
-        val_csv_path = "/home/shades/GitRepos/GSNCars/csv_files/confirmed_fronts/confirmed_front_val.csv"
-        test_csv_path = "/home/shades/GitRepos/GSNCars/csv_files/confirmed_fronts/confirmed_front_test.csv"
+        train_csv_path = "/home/shades/GitRepos/GSNCars/csv_files/angle_0/relevant_angle_train_0.csv"
+        val_csv_path = "/home/shades/GitRepos/GSNCars/csv_files/angle_0/relevant_angle_val_0.csv"
+        test_csv_path = "/home/shades/GitRepos/GSNCars/csv_files/angle_0/relevant_angle_test_0.csv"
 
         train_transform = transforms.Compose([
             transforms.ToTensor(), transforms.Resize(IMG_SIZE)])
@@ -92,9 +97,7 @@ class DVMModel(pl.LightningModule):
         predictions = self.forward(x)
         target = self.target_for_prod_year(prod_year)
         predicted_class = predictions.argmax(dim=1)
-        print(f"Predicted_class: {predicted_class}")
         target_class = torch.tensor(self.MAX_PROD_YEAR - prod_year.clone(), device="cuda")
-        print(f"Target_class: {target_class}")
         loss = self.loss(predictions, target)
         mea = self.metric(predicted_class, target_class)
         self.metric.reset()

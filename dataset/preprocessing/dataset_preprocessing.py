@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
     dataset_root = '../../resized_DVM'
 
-    csv_file = '/home/shades/GitRepos/GSNCars/csv_files/confirmed_fronts/confirmed_fronts.csv'
+    csv_file = '/home/shades/GitRepos/GSNCars/csv_files/angle_0/relevant_angle_0.csv'
     # desired_angle = 45
     # confirmed_train_csv_file = f'../confirmed_angle_train.csv'
     # confirmed_val_csv_file = f'../confirmed_angle_val.csv'
@@ -29,8 +29,8 @@ if __name__ == '__main__':
     # val_percentage = .1
     # test_percentage = .1
     df = pd.read_csv(csv_file)
-    df = df[df["prod_year"] > 2000]
-    df = df[df["prod_year"] < 2019]
+    # df = df[df["prod_year"] > 2000]
+    # df = df[df["prod_year"] < 2019]
     df = df.sample(frac=1)
     split_points = (
         int(len(df) * 0.8),
@@ -39,9 +39,9 @@ if __name__ == '__main__':
     train = df.iloc[:split_points[0]]
     val = df.iloc[split_points[0]:split_points[1]]
     test = df.iloc[split_points[1]:]
-    train.to_csv('/home/shades/GitRepos/GSNCars/csv_files/confirmed_fronts/confirmed_fronts_train.csv', index=False)
-    val.to_csv('/home/shades/GitRepos/GSNCars/csv_files/confirmed_fronts/confirmed_fronts_val.csv', index=False)
-    test.to_csv('/home/shades/GitRepos/GSNCars/csv_files/confirmed_fronts/confirmed_fronts_test.csv', index=False)
+    train.to_csv('/home/shades/GitRepos/GSNCars/csv_files/angle_0/relevant_angle_train_0.csv', index=False)
+    val.to_csv('/home/shades/GitRepos/GSNCars/csv_files/angle_0/relevant_angle_val_0.csv', index=False)
+    test.to_csv('/home/shades/GitRepos/GSNCars/csv_files/angle_0/relevant_angle_test_0.csv', index=False)
 
 
     # df = get_angle_data_frames(csv_file, desired_angle)
@@ -80,6 +80,6 @@ if __name__ == '__main__':
     #         csv_out.writerows(data)
 
 
-    file_path = os.path.join(dataset_root, data[564][0])
+    # file_path = os.path.join(dataset_root, data[564][0])
 
-    assert os.path.exists(file_path), f"File path: {file_path} does not exist"
+    # assert os.path.exists(file_path), f"File path: {file_path} does not exist"
