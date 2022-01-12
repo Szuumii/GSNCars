@@ -43,6 +43,33 @@ if __name__ == '__main__':
     val.to_csv('/home/shades/GitRepos/GSNCars/csv_files/angle_0/relevant_angle_val_0.csv', index=False)
     test.to_csv('/home/shades/GitRepos/GSNCars/csv_files/angle_0/relevant_angle_test_0.csv', index=False)
 
+    print('Creating regression dataset')
+
+    YEARS_BUCKETS = 9  # group years in a buckets of two
+    MAX_REGRESION_VALUE = 10  # max value for regression
+    MIN_YEAR = 2001
+    MAX_YEAR = 2018
+    BUCKET_REGRESION_STEP = MAX_REGRESION_VALUE / (YEARS_BUCKETS - 1)
+    YEARS = [i for i in range(MIN_YEAR, MAX_YEAR + 1)]
+    regression_year_map = {}
+
+    for year in YEARS:
+        mapped_value = (year - MIN_YEAR) // 2  # For each 2 years assign same index from 0 to 8
+        mapped_value = mapped_value * BUCKET_REGRESION_STEP
+        regression_year_map[year] = mapped_value
+
+    df = pd.read_csv(csv_file)
+    df['prod_year'].replace(regression_year_map, inplace=True)
+    df = df.sample(frac=1)
+    df.to_csv('/home/shades/GitRepos/GSNCars/csv_files/angle_0/relevant_angle_0_reg.csv')
+
+    train = df.iloc[:split_points[0]]
+    val = df.iloc[split_points[0]:split_points[1]]
+    test = df.iloc[split_points[1]:]
+    train.to_csv('/home/shades/GitRepos/GSNCars/csv_files/angle_0/relevant_angle_train_0_reg.csv', index=False)
+    val.to_csv('/home/shades/GitRepos/GSNCars/csv_files/angle_0/relevant_angle_val_0_reg.csv', index=False)
+    test.to_csv('/home/shades/GitRepos/GSNCars/csv_files/angle_0/relevant_angle_test_0_reg.csv', index=False)
+
 
     # df = get_angle_data_frames(csv_file, desired_angle)
 
