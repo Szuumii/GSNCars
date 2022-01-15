@@ -1,3 +1,4 @@
+from numpy import angle
 from torchvision import models, transforms
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
@@ -18,9 +19,11 @@ class DVMModel(pl.LightningModule):
         self.small_train = small_train
 
         # Prodyear range predetermined upfront based on the dataset
-        self.PROD_YEAR_RANGE = 18
 
         self.MAX_PROD_YEAR = 2018
+        self.MIN_PROD_YEAR = 2001
+        
+        self.PROD_YEAR_RANGE = self.MAX_PROD_YEAR - self.MIN_PROD_YEAR + 1
 
         # VGG 16
         # self.net = models.vgg16(pretrained=True)
@@ -30,6 +33,11 @@ class DVMModel(pl.LightningModule):
         #Resnet 50
         self.net = models.resnet50(pretrained=True)
         self.net.fc = nn.Linear(self.net.fc.in_features, self.PROD_YEAR_RANGE)
+
+        #EfficientNet
+        # self.net = models.efficientnet_b4(pretrained=True)
+        # # last_in_features = self.net.classifier[1].in_features
+        # self.net.classifier[1] = nn.Linear(last_in_features, self.PROD_YEAR_RANGE)
 
         self.loss = nn.CrossEntropyLoss()
         self.metric = MeanAbsoluteError()
@@ -41,9 +49,11 @@ class DVMModel(pl.LightningModule):
         SMALL_DATA_PERCENTAGE = 0.4
         IMG_SIZE = (300, 300)
 
-        train_csv_path = "/home/shades/GitRepos/GSNCars/csv_files/angle_0/relevant_angle_train_0.csv"
-        val_csv_path = "/home/shades/GitRepos/GSNCars/csv_files/angle_0/relevant_angle_val_0.csv"
-        test_csv_path = "/home/shades/GitRepos/GSNCars/csv_files/angle_0/relevant_angle_test_0.csv"
+        angle = 0
+
+        train_csv_path = f"/home/shades/GitRepos/GSNCars/csv_files/angle_{angle}/relevant_angle_train_{angle}.csv"
+        val_csv_path = f"/home/shades/GitRepos/GSNCars/csv_files/angle_{angle}/relevant_angle_val_{angle}.csv"
+        test_csv_path = f"/home/shades/GitRepos/GSNCars/csv_files/angle_{angle}/relevant_angle_test_{angle}.csv"
 
         train_transform = transforms.Compose([
             transforms.ToTensor(), transforms.Resize(IMG_SIZE)])
@@ -110,13 +120,13 @@ class DVMModel(pl.LightningModule):
         return targets
 
     def train_dataloader(self):
-        return DataLoader(self.train_dataset, batch_size=self.batch_size, num_workers=8)
+        return DataLoader(self.train_dataset, batch_size=self.batch_size, num_workers=24)
 
     def val_dataloader(self):
-        return DataLoader(self.validation_dataset, batch_size=self.batch_size, num_workers=8)
+        return DataLoader(self.validation_dataset, batch_size=self.batch_size, num_workers=24)
 
     def test_dataloader(self):
-        return DataLoader(self.test_dataset, batch_size=self.batch_size, num_workers=8)
+        return DataLoader(self.test_dataset, batch_size=self.batch_size, num_workers=24)
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.learning_rate)

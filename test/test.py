@@ -5,7 +5,7 @@ import torch
 
 if __name__ == '__main__':
     dataset_root = "/home/shades/Datasets/"
-    ckp_path = "/home/shades/GitRepos/GSNCars/lightning_logs/logs/version_34/checkpoints/epoch=3-step=47979.ckpt"
+    ckp_path = "/home/shades/GitRepos/GSNCars/lightning_logs/logs/version_36/checkpoints/epoch=4-step=59974.ckpt"
     batch_size = 16
 
     torch.cuda.empty_cache()
