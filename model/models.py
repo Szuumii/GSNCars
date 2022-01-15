@@ -9,7 +9,7 @@ from torchmetrics import MeanAbsoluteError
 
 
 class DVMModel(pl.LightningModule):
-    def __init__(self, dataset_dir_path, batch_size=32, learning_rate=1e-6, small_train=False):
+    def __init__(self, dataset_dir_path, image_angle=45, csv_path='', batch_size=32, learning_rate=1e-6, small_train=False):
         super().__init__()
         
         self.save_hyperparameters()
@@ -17,6 +17,8 @@ class DVMModel(pl.LightningModule):
         self.batch_size = batch_size
         self.learning_rate = learning_rate
         self.small_train = small_train
+        self.image_angle = image_angle
+        self.csv_path = csv_path
 
         # Prodyear range predetermined upfront based on the dataset
 
@@ -49,11 +51,9 @@ class DVMModel(pl.LightningModule):
         SMALL_DATA_PERCENTAGE = 0.4
         IMG_SIZE = (300, 300)
 
-        angle = 45 
-
-        train_csv_path = f"/home/shades/GitRepos/GSNCars/csv_files/angle_{angle}/relevant_angle_train_{angle}.csv"
-        val_csv_path = f"/home/shades/GitRepos/GSNCars/csv_files/angle_{angle}/relevant_angle_val_{angle}.csv"
-        test_csv_path = f"/home/shades/GitRepos/GSNCars/csv_files/angle_{angle}/relevant_angle_test_{angle}.csv"
+        train_csv_path = f"{self.csv_path}/csv_files/angle_{self.image_angle}/relevant_angle_train_{self.image_angle}.csv"
+        val_csv_path = f"{self.csv_path}/csv_files/angle_{self.image_angle}/relevant_angle_val_{self.image_angle}.csv"
+        test_csv_path = f"{self.csv_path}/csv_files/angle_{self.image_angle}/relevant_angle_test_{self.image_angle}.csv"
 
         train_transform = transforms.Compose([
             transforms.ToTensor(), transforms.Resize(IMG_SIZE)])
