@@ -31,13 +31,13 @@ class DVMModel(pl.LightningModule):
         # self.net.classifier[6] = nn.Linear(last_in_features, self.PROD_YEAR_RANGE)
 
         #Resnet 50
-        self.net = models.resnet50(pretrained=True)
-        self.net.fc = nn.Linear(self.net.fc.in_features, self.PROD_YEAR_RANGE)
+        # self.net = models.resnet50(pretrained=True)
+        # self.net.fc = nn.Linear(self.net.fc.in_features, self.PROD_YEAR_RANGE)
 
         #EfficientNet
-        # self.net = models.efficientnet_b4(pretrained=True)
-        # # last_in_features = self.net.classifier[1].in_features
-        # self.net.classifier[1] = nn.Linear(last_in_features, self.PROD_YEAR_RANGE)
+        self.net = models.efficientnet_b4(pretrained=True)
+        last_in_features = self.net.classifier[1].in_features
+        self.net.classifier[1] = nn.Linear(last_in_features, self.PROD_YEAR_RANGE)
 
         self.loss = nn.CrossEntropyLoss()
         self.metric = MeanAbsoluteError()
@@ -49,7 +49,7 @@ class DVMModel(pl.LightningModule):
         SMALL_DATA_PERCENTAGE = 0.4
         IMG_SIZE = (300, 300)
 
-        angle = 0
+        angle = 45 
 
         train_csv_path = f"/home/shades/GitRepos/GSNCars/csv_files/angle_{angle}/relevant_angle_train_{angle}.csv"
         val_csv_path = f"/home/shades/GitRepos/GSNCars/csv_files/angle_{angle}/relevant_angle_val_{angle}.csv"
