@@ -6,7 +6,6 @@ import torch
 from dataset.CarFronts import FrontDataset
 from torch import nn
 from torchmetrics import MeanAbsoluteError
-from enum import Enum
 
 class DVMModel(pl.LightningModule):
     def __init__(self, dataset_dir_path, architecture='VGG16', image_angle=45, csv_path='', batch_size=32, learning_rate=1e-6, small_train=False):
