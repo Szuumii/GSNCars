@@ -36,4 +36,5 @@ def display_batch_with_predictions(model, batch):
         axis[row, col].imshow(tensor)
         axis[row, col].set_xlabel(f"Prod_year: {prod_year[ndx].item()} vs predicted: {2018 - predicted_class[ndx].item()}")
 
+    plt.tight_layout()
     plt.show()
