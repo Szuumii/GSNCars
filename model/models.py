@@ -6,10 +6,10 @@ import torch
 from dataset.CarFronts import FrontDataset
 from torch import nn
 from torchmetrics import MeanAbsoluteError
-
+from enum import Enum
 
 class DVMModel(pl.LightningModule):
-    def __init__(self, dataset_dir_path, image_angle=45, csv_path='', batch_size=32, learning_rate=1e-6, small_train=False):
+    def __init__(self, dataset_dir_path, architecture='VGG16', image_angle=45, csv_path='', batch_size=32, learning_rate=1e-6, small_train=False):
         super().__init__()
         
         self.save_hyperparameters()
@@ -27,19 +27,22 @@ class DVMModel(pl.LightningModule):
         
         self.PROD_YEAR_RANGE = self.MAX_PROD_YEAR - self.MIN_PROD_YEAR + 1
 
-        # VGG 16
-        # self.net = models.vgg16(pretrained=True)
-        # last_in_features = self.net.classifier[6].in_features
-        # self.net.classifier[6] = nn.Linear(last_in_features, self.PROD_YEAR_RANGE)
+        if architecture is 'VGG16':
+            self.net = models.vgg16(pretrained=True)
+            last_in_features = self.net.classifier[6].in_features
+            self.net.classifier[6] = nn.Linear(last_in_features, self.PROD_YEAR_RANGE)
 
-        #Resnet 50
-        # self.net = models.resnet50(pretrained=True)
-        # self.net.fc = nn.Linear(self.net.fc.in_features, self.PROD_YEAR_RANGE)
+        elif architecture is 'Resnet50':
+            self.net = models.resnet50(pretrained=True)
+            self.net.fc = nn.Linear(self.net.fc.in_features, self.PROD_YEAR_RANGE)
 
-        #EfficientNet
-        self.net = models.efficientnet_b4(pretrained=True)
-        last_in_features = self.net.classifier[1].in_features
-        self.net.classifier[1] = nn.Linear(last_in_features, self.PROD_YEAR_RANGE)
+        elif architecture is 'EfficientNet':
+            self.net = models.efficientnet_b4(pretrained=True)
+            last_in_features = self.net.classifier[1].in_features
+            self.net.classifier[1] = nn.Linear(last_in_features, self.PROD_YEAR_RANGE)
+
+        else:
+            raise Exception('Unknown net architecture! Use VGG16, Resnet50 or EfficientNet')
 
         self.loss = nn.CrossEntropyLoss()
         self.metric = MeanAbsoluteError()
